@@ -13,6 +13,17 @@ const CONFIG = {
     messageDelay: 2900,
 };
 
+const MUSIC_SEQUENCE = [
+    { note: 196, duration: 0.7, delay: 0 },
+    { note: 220, duration: 0.7, delay: 0.75 },
+    { note: 247, duration: 0.9, delay: 1.5 },
+    { note: 294, duration: 0.8, delay: 2.45 },
+    { note: 247, duration: 0.8, delay: 3.3 },
+    { note: 220, duration: 0.7, delay: 4.15 },
+    { note: 196, duration: 0.9, delay: 5.0 },
+    { note: 174, duration: 1.0, delay: 5.95 },
+];
+
 const state = {
     canvas: null,
     ctx: null,
@@ -25,6 +36,7 @@ const state = {
     started: false,
     animationId: 0,
     audioContext: null,
+    musicTimer: 0,
     stars: [],
     lights: [],
     sparks: [],
@@ -203,38 +215,88 @@ function playTone() {
         }
         const ctx = state.audioContext;
         const now = ctx.currentTime;
-        const osc1 = ctx.createOscillator();
-        const osc2 = ctx.createOscillator();
-        const gain = ctx.createGain();
-        const filter = ctx.createBiquadFilter();
+        const master = ctx.createGain();
+        const shimmer = ctx.createBiquadFilter();
+        master.gain.setValueAtTime(0.0001, now);
+        master.gain.exponentialRampToValueAtTime(0.06, now + 0.4);
+        master.gain.exponentialRampToValueAtTime(0.03, now + 10.5);
+        master.gain.exponentialRampToValueAtTime(0.0001, now + 18);
 
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(720, now);
-        filter.Q.value = 0.8;
+        shimmer.type = 'lowpass';
+        shimmer.frequency.setValueAtTime(1200, now);
+        shimmer.Q.value = 0.75;
+        shimmer.connect(master);
+        master.connect(ctx.destination);
 
-        osc1.type = 'sine';
-        osc2.type = 'triangle';
-        osc1.frequency.setValueAtTime(196, now);
-        osc2.frequency.setValueAtTime(294, now);
-        osc2.detune.setValueAtTime(3, now);
+        const playDrift = (frequency, type, gainValue, startDelay, holdTime, detune = 0) => {
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            const filter = ctx.createBiquadFilter();
 
-        gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(0.045, now + 0.18);
-        gain.gain.exponentialRampToValueAtTime(0.018, now + 1.2);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
+            oscillator.type = type;
+            oscillator.frequency.setValueAtTime(frequency, now + startDelay);
+            oscillator.detune.setValueAtTime(detune, now + startDelay);
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(type === 'triangle' ? 900 : 1400, now + startDelay);
+            filter.Q.value = 0.7;
 
-        osc1.connect(filter);
-        osc2.connect(filter);
-        filter.connect(gain);
-        gain.connect(ctx.destination);
+            gainNode.gain.setValueAtTime(0.0001, now + startDelay);
+            gainNode.gain.exponentialRampToValueAtTime(gainValue, now + startDelay + 0.08);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, now + startDelay + holdTime);
 
-        osc1.start(now);
-        osc2.start(now);
-        osc1.stop(now + 2.3);
-        osc2.stop(now + 2.3);
+            oscillator.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(shimmer);
+
+            oscillator.start(now + startDelay);
+            oscillator.stop(now + startDelay + holdTime + 0.05);
+        };
+
+        // Gentle drone
+        playDrift(110, 'sine', 0.025, 0, 18);
+        playDrift(220, 'sine', 0.015, 0, 18, 2);
+
+        // Soft instrumental bed
+        MUSIC_SEQUENCE.forEach((step, index) => {
+            const type = index % 2 === 0 ? 'triangle' : 'sine';
+            const gainValue = index % 3 === 0 ? 0.025 : 0.02;
+            playDrift(step.note, type, gainValue, step.delay, step.duration, index % 2 === 0 ? -2 : 3);
+            if (index % 2 === 0) {
+                playDrift(step.note * 2, 'sine', 0.01, step.delay + 0.05, step.duration * 0.7, 0);
+            }
+        });
+
+        // Slow pulse that feels like a soft instrumental beat.
+        for (let i = 0; i < 8; i++) {
+            const beat = ctx.createOscillator();
+            const beatGain = ctx.createGain();
+            beat.type = 'sine';
+            beat.frequency.setValueAtTime(88, now + i * 2.15);
+            beatGain.gain.setValueAtTime(0.0001, now + i * 2.15);
+            beatGain.gain.exponentialRampToValueAtTime(0.012, now + i * 2.15 + 0.04);
+            beatGain.gain.exponentialRampToValueAtTime(0.0001, now + i * 2.15 + 0.24);
+            beat.connect(beatGain);
+            beatGain.connect(shimmer);
+            beat.start(now + i * 2.15);
+            beat.stop(now + i * 2.15 + 0.3);
+        }
     } catch (error) {
         // Audio is optional; fail silently on restricted devices.
     }
+}
+
+function scheduleInstrumentalLoop() {
+    if (!state.started) return;
+
+    if (state.musicTimer) {
+        clearTimeout(state.musicTimer);
+    }
+
+    state.musicTimer = window.setTimeout(() => {
+        if (!state.started) return;
+        playTone();
+        scheduleInstrumentalLoop();
+    }, 18500);
 }
 
 function drawBackground(ctx, time) {
@@ -443,6 +505,7 @@ function startExperience() {
     elements.uiLayer.classList.add('scene-drift');
 
     playTone();
+    scheduleInstrumentalLoop();
 
     const cx = state.width / 2;
     const cy = state.height * 0.62;
@@ -468,6 +531,7 @@ function onKeydown(event) {
 
 function cleanup() {
     if (state.animationId) cancelAnimationFrame(state.animationId);
+    if (state.musicTimer) clearTimeout(state.musicTimer);
     if (state.audioContext && state.audioContext.state !== 'closed') {
         state.audioContext.close().catch(() => {});
     }
