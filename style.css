@@ -1,5 +1,5 @@
 /* ============================================
-   LIGHT A JYOTHI - MODERN DESIGN
+    LIGHT A FLAME - COSMIC SANATANI DESIGN
    ============================================ */
 
 * {
@@ -11,13 +11,15 @@
 }
 
 :root {
-    --color-dark: #0a0e27;
-    --color-darker: #05070f;
-    --color-accent: #ffa500;
-    --color-gold: #ffd700;
-    --color-light: #f5f5f5;
-    --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --bg-deep: #02030a;
+    --bg-mid: #050b1b;
+    --bg-dim: #0a1325;
+    --gold: #ffd978;
+    --ember: #ffad53;
+    --ivory: #f8f2e8;
+    --text: rgba(248, 242, 232, 0.92);
+    --muted: rgba(248, 242, 232, 0.65);
+    --shadow: rgba(0, 0, 0, 0.45);
 }
 
 html, body {
@@ -27,17 +29,15 @@ html, body {
 }
 
 body {
-    background: var(--color-dark);
-    color: var(--color-light);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
+    background:
+        radial-gradient(circle at 50% 6%, rgba(255, 217, 120, 0.12), transparent 24%),
+        radial-gradient(circle at 50% 84%, rgba(255, 173, 83, 0.1), transparent 24%),
+        linear-gradient(180deg, var(--bg-dim) 0%, var(--bg-mid) 40%, var(--bg-deep) 100%);
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
-
-/* ============================================
-   CANVAS
-   ============================================ */
 
 #renderCanvas {
     display: block;
@@ -45,329 +45,177 @@ body {
     height: 100%;
 }
 
-/* ============================================
-   UI LAYER
-   ============================================ */
-
 .ui-layer {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     pointer-events: none;
-    z-index: 100;
+    z-index: 10;
 }
 
-.ui-layer * {
-    pointer-events: auto;
-}
-
-/* ============================================
-   SCREENS
-   ============================================ */
-
-.screen {
+.hero-panel {
     position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 1;
-    transition: opacity 0.8s var(--ease-smooth);
+    left: 50%;
+    top: 12svh;
+    transform: translateX(-50%);
+    width: min(92vw, 520px);
+    text-align: center;
+    padding: 1.25rem 1rem 1.5rem;
     pointer-events: auto;
+    transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
-.screen.hidden {
+.hero-panel.hidden {
     opacity: 0;
+    transform: translateX(-50%) translateY(-16px);
     pointer-events: none;
 }
 
-/* ============================================
-   INITIAL SCREEN
-   ============================================ */
-
-.initial-screen {
-    background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(5, 7, 15, 0.95) 100%);
-    backdrop-filter: blur(10px);
-}
-
-.content-wrapper {
-    text-align: center;
-    padding: 2rem;
-    width: 100%;
-    max-width: 600px;
-}
-
-.header-section {
-    margin-bottom: 3rem;
-    animation: fadeInDown 0.6s var(--ease-smooth) 0.2s both;
-}
-
-.subtitle {
-    font-size: 0.9rem;
-    font-weight: 300;
-    letter-spacing: 3px;
+.kicker {
+    font-size: 0.72rem;
+    letter-spacing: 0.42em;
     text-transform: uppercase;
-    color: rgba(255, 215, 0, 0.6);
-    margin-bottom: 0.5rem;
+    color: rgba(255, 211, 106, 0.7);
+    margin-bottom: 0.7rem;
 }
 
-.title {
-    font-size: clamp(2.5rem, 8vw, 4rem);
-    font-weight: 300;
-    letter-spacing: 4px;
-    color: var(--color-gold);
-    text-transform: uppercase;
+.hero-panel h1 {
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    font-size: clamp(2.4rem, 8vw, 5rem);
+    line-height: 0.98;
+    background: linear-gradient(180deg, #fff6d7 0%, #ffd978 38%, #ffb14d 62%, #8e5a1c 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    text-shadow:
+        0 1px 0 rgba(255, 241, 199, 0.75),
+        0 2px 0 rgba(196, 127, 43, 0.72),
+        0 3px 0 rgba(130, 78, 24, 0.65),
+        0 18px 28px rgba(0, 0, 0, 0.45),
+        0 0 30px rgba(255, 217, 120, 0.26),
+        0 0 64px rgba(255, 173, 83, 0.14);
 }
 
-.cta-section {
-    animation: fadeInUp 0.6s var(--ease-smooth) 0.4s both;
+.subcopy {
+    margin: 1rem auto 0;
+    max-width: 28ch;
+    font-size: clamp(0.95rem, 2.8vw, 1.08rem);
+    line-height: 1.7;
+    color: var(--muted);
 }
 
-/* ============================================
-   BUTTON
-   ============================================ */
-
-.btn {
-    position: relative;
-    background: none;
-    border: none;
+.light-btn {
+    margin-top: 1.5rem;
+    appearance: none;
+    border: 1px solid rgba(255, 217, 120, 0.48);
+    background:
+        linear-gradient(180deg, rgba(255, 217, 120, 0.24), rgba(255, 173, 83, 0.1));
+    color: var(--ivory);
+    padding: 0.95rem 1.5rem;
+    min-width: 190px;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
     cursor: pointer;
-    padding: 0;
-    display: inline-block;
-    font-size: 1rem;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.36), 0 0 28px rgba(255, 217, 120, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    pointer-events: auto;
 }
 
-.btn-primary {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem 2rem;
-    border: 1px solid rgba(255, 215, 0, 0.5);
-    border-radius: 50px;
-    color: var(--color-gold);
-    font-weight: 500;
-    letter-spacing: 1px;
-    transition: all 0.3s var(--ease-smooth);
-    background: rgba(255, 215, 0, 0.05);
-}
-
-.btn-primary:hover {
-    border-color: var(--color-gold);
-    background: rgba(255, 215, 0, 0.1);
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+.light-btn:hover,
+.light-btn:focus-visible {
     transform: translateY(-2px);
+    border-color: rgba(255, 217, 120, 0.82);
+    box-shadow: 0 20px 54px rgba(0, 0, 0, 0.44), 0 0 30px rgba(255, 217, 120, 0.16);
+    outline: none;
 }
 
-.btn-primary:active {
+.light-btn:active {
     transform: translateY(0);
 }
 
-.btn-inner {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-}
-
-.btn-text {
-    letter-spacing: 1px;
-}
-
-.btn-icon {
-    stroke: var(--color-gold);
-    animation: spin 3s linear infinite;
-}
-
-.btn-primary:hover .btn-icon {
-    animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* ============================================
-   EXPERIENCE SCREEN
-   ============================================ */
-
-.experience-screen {
-    background: linear-gradient(135deg, rgba(10, 14, 39, 0.98) 0%, rgba(5, 7, 15, 0.98) 100%);
-}
-
-.message-container {
-    text-align: center;
-    padding: 2rem;
-    opacity: 0;
-    animation: messageAppear 1s var(--ease-smooth) 2.5s both;
-}
-
-.experience-message {
-    font-size: clamp(1.2rem, 5vw, 2.5rem);
-    font-weight: 300;
-    letter-spacing: 2px;
-    color: var(--color-gold);
-    line-height: 1.6;
-}
-
-@keyframes messageAppear {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ============================================
-   LOADING INDICATOR
-   ============================================ */
-
-.loading {
-    position: fixed;
-    top: 50%;
+.message-panel {
+    position: absolute;
     left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 150;
+    bottom: max(7svh, 1.2rem);
+    transform: translateX(-50%) translateY(12px);
+    width: min(92vw, 680px);
+    text-align: center;
     opacity: 0;
+    transition: opacity 0.9s ease, transform 0.9s ease;
     pointer-events: none;
 }
 
-.loading.show {
+.message-panel.show {
     opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 
-.loading-dot {
-    width: 8px;
-    height: 8px;
-    background: var(--color-gold);
-    border-radius: 50%;
-    animation: pulse 1.5s ease-in-out infinite;
+.message-main {
+    color: rgba(248, 242, 232, 0.92);
+    font-size: clamp(1.05rem, 3vw, 1.65rem);
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 24px rgba(255, 217, 120, 0.26), 0 0 60px rgba(255, 173, 83, 0.1);
 }
 
-@keyframes pulse {
-    0%, 100% {
-        opacity: 0.3;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.2);
-    }
+.message-quote {
+    margin-top: 0.7rem;
+    font-size: clamp(0.95rem, 2.2vw, 1.2rem);
+    line-height: 1.65;
+    color: rgba(248, 242, 232, 0.78);
+    letter-spacing: 0.01em;
+    text-shadow: 0 0 16px rgba(255, 217, 120, 0.14);
 }
 
-/* ============================================
-   ANIMATIONS
-   ============================================ */
-
-@keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.camera-drift {
+    animation: cameraDrift 1.2s ease-out forwards;
 }
 
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+@keyframes cameraDrift {
+    from { transform: scale(1); }
+    to { transform: scale(1.035); }
 }
-
-/* ============================================
-   MOBILE FIRST - RESPONSIVE
-   ============================================ */
 
 @media (max-width: 768px) {
-    .header-section {
-        margin-bottom: 2.5rem;
+    .hero-panel {
+        top: 10svh;
+        padding-inline: 0.6rem;
     }
 
-    .subtitle {
-        font-size: 0.8rem;
-        letter-spacing: 2px;
+    .kicker {
+        letter-spacing: 0.28em;
+        font-size: 0.66rem;
     }
 
-    .title {
-        font-size: 2rem;
-        letter-spacing: 2px;
+    .light-btn {
+        width: min(72vw, 220px);
+        min-width: 0;
+        padding: 0.85rem 1.2rem;
     }
 
-    .btn-primary {
-        padding: 0.65rem 1.5rem;
-        font-size: 0.9rem;
-    }
-
-    .experience-message {
-        font-size: 1.3rem;
-        letter-spacing: 1px;
+    .message-panel {
+        bottom: max(5svh, 1rem);
     }
 }
 
 @media (max-width: 480px) {
-    .header-section {
-        margin-bottom: 2rem;
+    .hero-panel h1 {
+        letter-spacing: 0.08em;
     }
 
-    .subtitle {
-        font-size: 0.75rem;
-        letter-spacing: 1.5px;
-    }
-
-    .title {
-        font-size: 1.5rem;
-        letter-spacing: 2px;
-    }
-
-    .btn-primary {
-        padding: 0.6rem 1.3rem;
-        font-size: 0.85rem;
-    }
-
-    .experience-message {
-        font-size: 1.1rem;
-        letter-spacing: 0.5px;
+    .subcopy {
+        max-width: 24ch;
+        line-height: 1.6;
     }
 }
 
-/* ============================================
-   ACCESSIBILITY
-   ============================================ */
-
 @media (prefers-reduced-motion: reduce) {
-    * {
+    *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
-    }
-}
-
-@media (prefers-color-scheme: light) {
-    :root {
-        --color-dark: #f5f5f5;
-        --color-darker: #e8e8e8;
-        --color-light: #0a0e27;
-    }
-
-    .initial-screen {
-        background: linear-gradient(135deg, rgba(245, 245, 245, 0.95) 0%, rgba(232, 232, 232, 0.95) 100%);
-    }
-
-    .experience-screen {
-        background: linear-gradient(135deg, rgba(245, 245, 245, 0.98) 0%, rgba(232, 232, 232, 0.98) 100%);
+        scroll-behavior: auto !important;
     }
 }
