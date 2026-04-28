@@ -3,9 +3,12 @@
  */
 
 const CONFIG = {
-    starCount: 160,
-    lightCountDesktop: 1400,
-    lightCountMobile: 760,
+    starCountDesktop: 140,
+    starCountMobile: 72,
+    lightCountDesktop: 760,
+    lightCountMobile: 260,
+    sparkCountDesktop: 520,
+    sparkCountMobile: 180,
     burstDuration: 6500,
     messageDelay: 2900,
 };
@@ -13,6 +16,8 @@ const CONFIG = {
 const state = {
     canvas: null,
     ctx: null,
+    backgroundCanvas: null,
+    backgroundCtx: null,
     dpr: 1,
     width: 0,
     height: 0,
@@ -24,6 +29,7 @@ const state = {
     lights: [],
     sparks: [],
     nebulaSeed: Math.random() * 1000,
+    isMobile: false,
 };
 
 const elements = {
@@ -37,7 +43,10 @@ const elements = {
 function setupCanvas() {
     state.canvas = elements.canvas;
     state.ctx = state.canvas.getContext('2d', { alpha: false, desynchronized: true });
-    state.dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+    state.backgroundCanvas = document.createElement('canvas');
+    state.backgroundCtx = state.backgroundCanvas.getContext('2d', { alpha: false });
+    state.isMobile = window.matchMedia('(max-width: 768px)').matches || window.innerWidth < 900;
+    state.dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, state.isMobile ? 1.25 : 1.75));
     resizeCanvas();
 }
 
@@ -48,12 +57,17 @@ function resizeCanvas() {
     state.canvas.height = Math.floor(state.height * state.dpr);
     state.canvas.style.width = `${state.width}px`;
     state.canvas.style.height = `${state.height}px`;
+    state.backgroundCanvas.width = Math.floor(state.width * state.dpr);
+    state.backgroundCanvas.height = Math.floor(state.height * state.dpr);
     state.ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+    state.backgroundCtx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
     buildStars();
+    renderStaticBackground();
 }
 
 function buildStars() {
-    state.stars = Array.from({ length: CONFIG.starCount }, (_, index) => ({
+    const starCount = state.isMobile ? CONFIG.starCountMobile : CONFIG.starCountDesktop;
+    state.stars = Array.from({ length: starCount }, (_, index) => ({
         x: Math.random(),
         y: Math.random() * 0.75,
         r: Math.random() * 1.15 + 0.35,
@@ -61,6 +75,47 @@ function buildStars() {
         drift: (index % 2 ? 1 : -1) * (Math.random() * 0.015 + 0.004),
         hue: index % 6 === 0 ? 42 : 50,
     }));
+}
+
+function renderStaticBackground() {
+    const ctx = state.backgroundCtx;
+    const width = state.width;
+    const height = state.height;
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, '#060f23');
+    gradient.addColorStop(0.5, '#040812');
+    gradient.addColorStop(1, '#010205');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+
+    const nebula = ctx.createRadialGradient(
+        width * 0.5,
+        height * 0.22,
+        20,
+        width * 0.5,
+        height * 0.22,
+        Math.max(width, height) * 0.85
+    );
+    nebula.addColorStop(0, 'rgba(255, 200, 110, 0.1)');
+    nebula.addColorStop(0.35, 'rgba(255, 173, 83, 0.06)');
+    nebula.addColorStop(0.6, 'rgba(93, 129, 255, 0.06)');
+    nebula.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = nebula;
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.save();
+    ctx.globalAlpha = 0.95;
+    for (const star of state.stars) {
+        const x = star.x * width;
+        const y = star.y * height;
+        const alpha = 0.2 + (star.r / 1.5) * 0.35;
+        ctx.fillStyle = `rgba(255, 248, 232, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(x, y, star.r, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.restore();
 }
 
 class LightParticle {
@@ -115,7 +170,7 @@ function createSparkBurst(x, y, count, spread, speed, hueRange) {
 }
 
 function createSkyParticles() {
-    const total = window.innerWidth < 700 ? CONFIG.lightCountMobile : CONFIG.lightCountDesktop;
+    const total = state.isMobile ? CONFIG.lightCountMobile : CONFIG.lightCountDesktop;
     const cx = state.width / 2;
     const cy = state.height * 0.6;
 
@@ -187,23 +242,7 @@ function drawBackground(ctx, time) {
     gradient.addColorStop(0, '#060f23');
     gradient.addColorStop(0.5, '#040812');
     gradient.addColorStop(1, '#010205');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, state.width, state.height);
-
-    const nebula = ctx.createRadialGradient(
-        state.width * 0.5,
-        state.height * 0.22,
-        20,
-        state.width * 0.5,
-        state.height * 0.22,
-        Math.max(state.width, state.height) * 0.85
-    );
-    nebula.addColorStop(0, 'rgba(255, 200, 110, 0.1)');
-    nebula.addColorStop(0.35, 'rgba(255, 173, 83, 0.06)');
-    nebula.addColorStop(0.6, 'rgba(93, 129, 255, 0.06)');
-    nebula.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = nebula;
-    ctx.fillRect(0, 0, state.width, state.height);
+    ctx.drawImage(state.backgroundCanvas, 0, 0, state.width, state.height);
 
     ctx.save();
     ctx.globalAlpha = 0.95;
@@ -267,7 +306,7 @@ function drawCentralFlame(ctx, time, glowScale, showFlame) {
         ctx.fill();
     }
 
-    ctx.shadowBlur = 36;
+    ctx.shadowBlur = state.isMobile ? 20 : 36;
     ctx.shadowColor = 'rgba(255, 178, 72, 0.55)';
     ctx.fillStyle = 'rgba(60, 31, 12, 0.95)';
     ctx.beginPath();
@@ -279,7 +318,7 @@ function drawCentralFlame(ctx, time, glowScale, showFlame) {
     bowl.addColorStop(0.4, '#c08a4b');
     bowl.addColorStop(0.8, '#7f4a24');
     bowl.addColorStop(1, '#402111');
-    ctx.shadowBlur = 24;
+    ctx.shadowBlur = state.isMobile ? 14 : 24;
     ctx.shadowColor = 'rgba(255, 188, 89, 0.32)';
     ctx.fillStyle = bowl;
     ctx.beginPath();
@@ -386,7 +425,7 @@ function render(time) {
     if (!state.started) {
         drawCentralFlame(state.ctx, time, 1, false);
     } else {
-        const burstScale = Math.min(1.28, 1 + Math.min(1, time / CONFIG.burstDuration) * 0.22);
+        const burstScale = Math.min(1.22, 1 + Math.min(1, time / CONFIG.burstDuration) * 0.18);
         drawCentralFlame(state.ctx, time, burstScale, true);
         updateAndDrawParticles(delta);
     }
@@ -407,12 +446,12 @@ function startExperience() {
 
     const cx = state.width / 2;
     const cy = state.height * 0.62;
-    createSparkBurst(cx, cy - 10, state.width < 700 ? 40 : 64, 30, 0.05, [28, 44]);
+    createSparkBurst(cx, cy - 10, state.isMobile ? 24 : 48, 30, 0.05, [28, 44]);
 
     window.setTimeout(() => {
         createSkyParticles();
-        createSparkBurst(cx, cy - 10, state.width < 700 ? 320 : 520, Math.min(state.width, state.height) * 0.26, 0.08, [34, 52]);
-        createSparkBurst(cx, cy - 16, state.width < 700 ? 120 : 180, 70, 0.1, [44, 60]);
+        createSparkBurst(cx, cy - 10, state.isMobile ? CONFIG.sparkCountMobile : CONFIG.sparkCountDesktop, Math.min(state.width, state.height) * 0.22, 0.07, [34, 52]);
+        createSparkBurst(cx, cy - 16, state.isMobile ? 72 : 140, 70, 0.09, [44, 60]);
     }, 900);
 
     window.setTimeout(() => {
