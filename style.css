@@ -136,10 +136,11 @@ body {
 }
 
 .tap-cue {
-    margin-top: 0.85rem;
-    display: inline-flex;
+    margin: 0.9rem auto 0;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.55rem;
+    gap: 0.28rem;
     color: rgba(255, 228, 164, 0.92);
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -157,6 +158,13 @@ body {
     position: relative;
 }
 
+.tap-cue-ring,
+.deva-link-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .tap-cue-ring::after {
     content: '';
     position: absolute;
@@ -167,7 +175,7 @@ body {
 }
 
 .tap-cue-finger {
-    font-size: 1.05rem;
+    font-size: 1.25rem;
     line-height: 1;
     transform-origin: 50% 80%;
     animation: cueTap 1.3s ease-in-out infinite;
@@ -232,6 +240,7 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 0.55rem;
     margin-top: 1rem;
     padding: 0.72rem 1.1rem;
     border-radius: 999px;
@@ -243,6 +252,13 @@ body {
     letter-spacing: 0.08em;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28), 0 0 22px rgba(255, 217, 120, 0.08);
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.deva-link-icon {
+    font-size: 1rem;
+    line-height: 1;
+    transform-origin: 50% 80%;
+    animation: cueTap 1.3s ease-in-out infinite;
 }
 
 .deva-link:hover,
@@ -304,9 +320,21 @@ body {
     }
 
     .tap-cue {
-        margin-top: 0.7rem;
+        margin-top: 0.75rem;
         font-size: 0.7rem;
-        gap: 0.45rem;
+        gap: 0.22rem;
+    }
+
+    .tap-cue-finger {
+        font-size: 1.15rem;
+    }
+
+    .deva-link {
+        gap: 0.42rem;
+    }
+
+    .deva-link-icon {
+        font-size: 0.95rem;
     }
 }
 
