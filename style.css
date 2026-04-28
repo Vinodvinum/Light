@@ -153,23 +153,48 @@ body {
 }
 
 .message-main {
-    color: rgba(248, 242, 232, 0.92);
+    color: var(--gold);
     font-size: clamp(1.05rem, 3vw, 1.65rem);
     line-height: 1.6;
     letter-spacing: 0.02em;
-    text-shadow: 0 0 24px rgba(255, 217, 120, 0.26), 0 0 60px rgba(255, 173, 83, 0.1);
+    text-shadow: 0 0 18px rgba(255, 217, 120, 0.32), 0 0 44px rgba(255, 173, 83, 0.12);
 }
 
 .message-quote {
     margin-top: 0.7rem;
     font-size: clamp(0.95rem, 2.2vw, 1.2rem);
     line-height: 1.65;
-    color: rgba(248, 242, 232, 0.78);
+    color: rgba(255, 228, 164, 0.92);
     letter-spacing: 0.01em;
-    text-shadow: 0 0 16px rgba(255, 217, 120, 0.14);
+    text-shadow: 0 0 16px rgba(255, 217, 120, 0.22), 0 0 38px rgba(255, 173, 83, 0.08);
 }
 
-.camera-drift {
+.deva-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1rem;
+    padding: 0.72rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 217, 120, 0.4);
+    background: linear-gradient(180deg, rgba(255, 217, 120, 0.18), rgba(255, 173, 83, 0.08));
+    color: #fff1c4;
+    text-decoration: none;
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28), 0 0 22px rgba(255, 217, 120, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.deva-link:hover,
+.deva-link:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(255, 217, 120, 0.75);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.36), 0 0 28px rgba(255, 217, 120, 0.15);
+    outline: none;
+}
+
+.scene-drift {
     animation: cameraDrift 1.2s ease-out forwards;
 }
 
@@ -208,6 +233,15 @@ body {
     .subcopy {
         max-width: 24ch;
         line-height: 1.6;
+    }
+
+    .message-panel {
+        width: min(94vw, 680px);
+    }
+
+    .deva-link {
+        width: 100%;
+        padding: 0.8rem 1rem;
     }
 }
 

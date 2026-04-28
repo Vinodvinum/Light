@@ -31,6 +31,7 @@ const elements = {
     heroPanel: document.getElementById('heroPanel'),
     lightBtn: document.getElementById('lightBtn'),
     messagePanel: document.getElementById('messagePanel'),
+    uiLayer: document.querySelector('.ui-layer'),
 };
 
 function setupCanvas() {
@@ -399,7 +400,8 @@ function startExperience() {
 
     elements.heroPanel.classList.add('hidden');
     elements.messagePanel.classList.remove('show');
-    document.body.classList.add('camera-drift');
+    elements.canvas.classList.add('scene-drift');
+    elements.uiLayer.classList.add('scene-drift');
 
     playTone();
 
@@ -430,6 +432,8 @@ function cleanup() {
     if (state.audioContext && state.audioContext.state !== 'closed') {
         state.audioContext.close().catch(() => {});
     }
+    elements.canvas.classList.remove('scene-drift');
+    elements.uiLayer.classList.remove('scene-drift');
 }
 
 setupCanvas();
