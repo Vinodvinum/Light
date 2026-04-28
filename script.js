@@ -4,11 +4,11 @@
 
 const CONFIG = {
     starCountDesktop: 140,
-    starCountMobile: 72,
+    starCountMobile: 34,
     lightCountDesktop: 760,
-    lightCountMobile: 260,
+    lightCountMobile: 120,
     sparkCountDesktop: 520,
-    sparkCountMobile: 180,
+    sparkCountMobile: 72,
     burstDuration: 6500,
     messageDelay: 2900,
 };
@@ -37,6 +37,8 @@ const state = {
     animationId: 0,
     audioContext: null,
     musicTimer: 0,
+    lastPaintTime: 0,
+    frameInterval: 16,
     stars: [],
     lights: [],
     sparks: [],
@@ -58,7 +60,8 @@ function setupCanvas() {
     state.backgroundCanvas = document.createElement('canvas');
     state.backgroundCtx = state.backgroundCanvas.getContext('2d', { alpha: false });
     state.isMobile = window.matchMedia('(max-width: 768px)').matches || window.innerWidth < 900;
-    state.dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, state.isMobile ? 1.25 : 1.75));
+    state.dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, state.isMobile ? 1 : 1.5));
+    state.frameInterval = state.isMobile ? 42 : 16;
     resizeCanvas();
 }
 
@@ -82,7 +85,7 @@ function buildStars() {
     state.stars = Array.from({ length: starCount }, (_, index) => ({
         x: Math.random(),
         y: Math.random() * 0.75,
-        r: Math.random() * 1.15 + 0.35,
+        r: state.isMobile ? Math.random() * 0.6 + 0.2 : Math.random() * 1.15 + 0.35,
         twinkle: Math.random() * Math.PI * 2,
         drift: (index % 2 ? 1 : -1) * (Math.random() * 0.015 + 0.004),
         hue: index % 6 === 0 ? 42 : 50,
@@ -121,7 +124,7 @@ function renderStaticBackground() {
     for (const star of state.stars) {
         const x = star.x * width;
         const y = star.y * height;
-        const alpha = 0.2 + (star.r / 1.5) * 0.35;
+        const alpha = state.isMobile ? 0.2 + (star.r / 1.2) * 0.22 : 0.2 + (star.r / 1.5) * 0.35;
         ctx.fillStyle = `rgba(255, 248, 232, ${alpha})`;
         ctx.beginPath();
         ctx.arc(x, y, star.r, 0, Math.PI * 2);
@@ -306,19 +309,21 @@ function drawBackground(ctx, time) {
     gradient.addColorStop(1, '#010205');
     ctx.drawImage(state.backgroundCanvas, 0, 0, state.width, state.height);
 
-    ctx.save();
-    ctx.globalAlpha = 0.95;
-    for (const star of state.stars) {
-        const sway = Math.sin(time * 0.00016 + star.twinkle) * star.drift * state.width;
-        const x = (star.x * state.width + sway + state.width) % state.width;
-        const y = star.y * state.height;
-        const twinkle = 0.55 + Math.sin(time * 0.0012 + star.twinkle) * 0.3;
-        ctx.fillStyle = `rgba(255, 248, 232, ${0.18 + twinkle * 0.34})`;
-        ctx.beginPath();
-        ctx.arc(x, y, star.r * twinkle, 0, Math.PI * 2);
-        ctx.fill();
+    if (!state.isMobile) {
+        ctx.save();
+        ctx.globalAlpha = 0.95;
+        for (const star of state.stars) {
+            const sway = Math.sin(time * 0.00016 + star.twinkle) * star.drift * state.width;
+            const x = (star.x * state.width + sway + state.width) % state.width;
+            const y = star.y * state.height;
+            const twinkle = 0.55 + Math.sin(time * 0.0012 + star.twinkle) * 0.3;
+            ctx.fillStyle = `rgba(255, 248, 232, ${0.18 + twinkle * 0.34})`;
+            ctx.beginPath();
+            ctx.arc(x, y, star.r * twinkle, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
     }
-    ctx.restore();
 }
 
 function drawTempleSilhouette(ctx) {
@@ -364,7 +369,7 @@ function drawSacredFrame(ctx, time) {
     ctx.fill();
 
     ctx.strokeStyle = 'rgba(255, 220, 140, 0.18)';
-    ctx.lineWidth = state.isMobile ? 1.2 : 1.6;
+    ctx.lineWidth = state.isMobile ? 1 : 1.6;
     for (let ring = 0; ring < 4; ring++) {
         const radius = (92 + ring * 26) * pulse;
         ctx.beginPath();
@@ -377,8 +382,8 @@ function drawSacredFrame(ctx, time) {
     archGradient.addColorStop(0.5, 'rgba(255, 173, 83, 0.12)');
     archGradient.addColorStop(1, 'rgba(105, 61, 18, 0.02)');
     ctx.strokeStyle = archGradient;
-    ctx.lineWidth = state.isMobile ? 3 : 4;
-    ctx.shadowBlur = state.isMobile ? 12 : 18;
+    ctx.lineWidth = state.isMobile ? 2 : 4;
+    ctx.shadowBlur = state.isMobile ? 8 : 18;
     ctx.shadowColor = 'rgba(255, 173, 83, 0.2)';
 
     ctx.beginPath();
@@ -395,8 +400,8 @@ function drawSacredFrame(ctx, time) {
     pillarGradient.addColorStop(0.5, 'rgba(193, 138, 75, 0.95)');
     pillarGradient.addColorStop(1, 'rgba(85, 50, 19, 0.98)');
     ctx.fillStyle = pillarGradient;
-    ctx.fillRect(-122, 64, 10, 24);
-    ctx.fillRect(112, 64, 10, 24);
+    ctx.fillRect(-122, 64, state.isMobile ? 8 : 10, 24);
+    ctx.fillRect(112, 64, state.isMobile ? 8 : 10, 24);
 
     ctx.fillStyle = 'rgba(255, 217, 120, 0.28)';
     ctx.fillRect(-130, 58, 26, 4);
@@ -405,7 +410,8 @@ function drawSacredFrame(ctx, time) {
     // Lotus pedestal beneath the diya.
     ctx.save();
     ctx.translate(0, 78);
-    for (let i = 0; i < 12; i++) {
+    const petals = state.isMobile ? 8 : 12;
+    for (let i = 0; i < petals; i++) {
         ctx.save();
         ctx.rotate((Math.PI * 2 * i) / 12);
         ctx.beginPath();
@@ -413,7 +419,7 @@ function drawSacredFrame(ctx, time) {
         ctx.quadraticCurveTo(18, -18, 6, -40);
         ctx.quadraticCurveTo(-5, -18, 0, 0);
         ctx.closePath();
-        ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 194, 101, 0.22)' : 'rgba(255, 161, 77, 0.16)';
+        ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 194, 101, 0.18)' : 'rgba(255, 161, 77, 0.13)';
         ctx.fill();
         ctx.restore();
     }
@@ -430,7 +436,7 @@ function drawSacredRays(ctx, time) {
 
     ctx.save();
     ctx.translate(cx, cy - 8);
-    ctx.globalAlpha = 0.45;
+    ctx.globalAlpha = state.isMobile ? 0.22 : 0.45;
     for (let i = 0; i < rayCount; i++) {
         const angle = (Math.PI * 2 * i) / rayCount + Math.sin(time * 0.0006 + i) * 0.05;
         const rayGradient = ctx.createLinearGradient(0, 0, Math.cos(angle) * length, Math.sin(angle) * length);
@@ -438,7 +444,7 @@ function drawSacredRays(ctx, time) {
         rayGradient.addColorStop(0.45, 'rgba(255, 173, 83, 0.08)');
         rayGradient.addColorStop(1, 'rgba(255, 173, 83, 0)');
         ctx.strokeStyle = rayGradient;
-        ctx.lineWidth = state.isMobile ? 1.2 : 1.8;
+        ctx.lineWidth = state.isMobile ? 1 : 1.8;
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.lineTo(Math.cos(angle) * length, Math.sin(angle) * length);
@@ -469,7 +475,7 @@ function drawCentralFlame(ctx, time, glowScale, showFlame) {
         ctx.fill();
     }
 
-    ctx.shadowBlur = state.isMobile ? 20 : 36;
+    ctx.shadowBlur = state.isMobile ? 12 : 36;
     ctx.shadowColor = 'rgba(255, 178, 72, 0.55)';
     ctx.fillStyle = 'rgba(60, 31, 12, 0.95)';
     ctx.beginPath();
@@ -481,7 +487,7 @@ function drawCentralFlame(ctx, time, glowScale, showFlame) {
     bowl.addColorStop(0.4, '#c08a4b');
     bowl.addColorStop(0.8, '#7f4a24');
     bowl.addColorStop(1, '#402111');
-    ctx.shadowBlur = state.isMobile ? 14 : 24;
+    ctx.shadowBlur = state.isMobile ? 8 : 24;
     ctx.shadowColor = 'rgba(255, 188, 89, 0.32)';
     ctx.fillStyle = bowl;
     ctx.beginPath();
@@ -506,7 +512,7 @@ function drawCentralFlame(ctx, time, glowScale, showFlame) {
         flameOuter.addColorStop(0.18, 'rgba(255, 220, 119, 0.95)');
         flameOuter.addColorStop(0.65, 'rgba(255, 144, 55, 0.82)');
         flameOuter.addColorStop(1, 'rgba(255, 144, 55, 0)');
-        ctx.shadowBlur = 28;
+        ctx.shadowBlur = state.isMobile ? 16 : 28;
         ctx.shadowColor = 'rgba(255, 163, 76, 0.7)';
         ctx.fillStyle = flameOuter;
         ctx.beginPath();
@@ -551,6 +557,7 @@ function drawMandalas(ctx, time) {
 }
 
 function updateAndDrawParticles(delta) {
+    const mobileLimit = state.isMobile ? 110 : Infinity;
     const aliveLights = [];
     for (const light of state.lights) {
         if (!light.born) {
@@ -560,14 +567,14 @@ function updateAndDrawParticles(delta) {
             continue;
         }
         light.update(delta);
-        if (light.life > 0) aliveLights.push(light);
+        if (light.life > 0 && aliveLights.length < mobileLimit) aliveLights.push(light);
     }
     state.lights = aliveLights;
 
     const sparks = [];
     for (const spark of state.sparks) {
         spark.update(delta);
-        if (spark.life > 0) sparks.push(spark);
+        if (spark.life > 0 && sparks.length < (state.isMobile ? 50 : Infinity)) sparks.push(spark);
     }
     state.sparks = sparks;
 
@@ -578,6 +585,12 @@ function updateAndDrawParticles(delta) {
 }
 
 function render(time) {
+    if (time - state.lastPaintTime < state.frameInterval) {
+        state.animationId = requestAnimationFrame(render);
+        return;
+    }
+    state.lastPaintTime = time;
+
     const delta = Math.min(34, time - state.time || 16);
     state.time = time;
 
@@ -612,12 +625,12 @@ function startExperience() {
 
     const cx = state.width / 2;
     const cy = state.height * 0.62;
-    createSparkBurst(cx, cy - 10, state.isMobile ? 24 : 48, 30, 0.05, [28, 44]);
+    createSparkBurst(cx, cy - 10, state.isMobile ? 12 : 48, 30, 0.05, [28, 44]);
 
     window.setTimeout(() => {
         createSkyParticles();
-        createSparkBurst(cx, cy - 10, state.isMobile ? CONFIG.sparkCountMobile : CONFIG.sparkCountDesktop, Math.min(state.width, state.height) * 0.22, 0.07, [34, 52]);
-        createSparkBurst(cx, cy - 16, state.isMobile ? 72 : 140, 70, 0.09, [44, 60]);
+        createSparkBurst(cx, cy - 10, state.isMobile ? CONFIG.sparkCountMobile : CONFIG.sparkCountDesktop, Math.min(state.width, state.height) * 0.18, 0.07, [34, 52]);
+        createSparkBurst(cx, cy - 16, state.isMobile ? 36 : 140, 70, 0.09, [44, 60]);
     }, 900);
 
     window.setTimeout(() => {
