@@ -135,6 +135,64 @@ body {
     transform: translateY(0);
 }
 
+.tap-cue {
+    margin-top: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: rgba(255, 228, 164, 0.92);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.76rem;
+    user-select: none;
+    animation: cueFloat 1.8s ease-in-out infinite;
+}
+
+.tap-cue-ring {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 217, 120, 0.65);
+    box-shadow: 0 0 18px rgba(255, 217, 120, 0.28);
+    position: relative;
+}
+
+.tap-cue-ring::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: rgba(255, 217, 120, 0.85);
+    animation: cuePulse 1.6s ease-in-out infinite;
+}
+
+.tap-cue-finger {
+    font-size: 1.05rem;
+    line-height: 1;
+    transform-origin: 50% 80%;
+    animation: cueTap 1.3s ease-in-out infinite;
+}
+
+.tap-cue-text {
+    opacity: 0.9;
+}
+
+@keyframes cueFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+@keyframes cuePulse {
+    0%, 100% { transform: scale(0.85); opacity: 0.65; }
+    50% { transform: scale(1.1); opacity: 1; }
+}
+
+@keyframes cueTap {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    35% { transform: translateY(-3px) rotate(-7deg); }
+    60% { transform: translateY(1px) rotate(0deg); }
+}
+
 .message-panel {
     position: absolute;
     left: 50%;
@@ -243,6 +301,20 @@ body {
     .deva-link {
         width: 100%;
         padding: 0.8rem 1rem;
+    }
+
+    .tap-cue {
+        margin-top: 0.7rem;
+        font-size: 0.7rem;
+        gap: 0.45rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tap-cue,
+    .tap-cue-ring::after,
+    .tap-cue-finger {
+        animation: none !important;
     }
 }
 
