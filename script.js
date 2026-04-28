@@ -346,6 +346,107 @@ function drawTempleSilhouette(ctx) {
     ctx.restore();
 }
 
+function drawSacredFrame(ctx, time) {
+    const cx = state.width / 2;
+    const cy = state.height * 0.62;
+    const pulse = 1 + Math.sin(time * 0.0015) * 0.03;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    const outerGlow = ctx.createRadialGradient(0, -40, 80, 0, -20, Math.min(state.width, state.height) * 0.45);
+    outerGlow.addColorStop(0, 'rgba(255, 217, 120, 0.1)');
+    outerGlow.addColorStop(0.55, 'rgba(255, 173, 83, 0.05)');
+    outerGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = outerGlow;
+    ctx.beginPath();
+    ctx.arc(0, -20, Math.min(state.width, state.height) * 0.42, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255, 220, 140, 0.18)';
+    ctx.lineWidth = state.isMobile ? 1.2 : 1.6;
+    for (let ring = 0; ring < 4; ring++) {
+        const radius = (92 + ring * 26) * pulse;
+        ctx.beginPath();
+        ctx.arc(0, -6, radius, Math.PI * 0.1, Math.PI * 0.9);
+        ctx.stroke();
+    }
+
+    const archGradient = ctx.createLinearGradient(0, -190, 0, 96);
+    archGradient.addColorStop(0, 'rgba(255, 235, 182, 0.36)');
+    archGradient.addColorStop(0.5, 'rgba(255, 173, 83, 0.12)');
+    archGradient.addColorStop(1, 'rgba(105, 61, 18, 0.02)');
+    ctx.strokeStyle = archGradient;
+    ctx.lineWidth = state.isMobile ? 3 : 4;
+    ctx.shadowBlur = state.isMobile ? 12 : 18;
+    ctx.shadowColor = 'rgba(255, 173, 83, 0.2)';
+
+    ctx.beginPath();
+    ctx.moveTo(-118, 80);
+    ctx.lineTo(-118, -42);
+    ctx.quadraticCurveTo(-118, -190, 0, -198);
+    ctx.quadraticCurveTo(118, -190, 118, -42);
+    ctx.lineTo(118, 80);
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+    const pillarGradient = ctx.createLinearGradient(-140, 0, 140, 0);
+    pillarGradient.addColorStop(0, 'rgba(85, 50, 19, 0.98)');
+    pillarGradient.addColorStop(0.5, 'rgba(193, 138, 75, 0.95)');
+    pillarGradient.addColorStop(1, 'rgba(85, 50, 19, 0.98)');
+    ctx.fillStyle = pillarGradient;
+    ctx.fillRect(-122, 64, 10, 24);
+    ctx.fillRect(112, 64, 10, 24);
+
+    ctx.fillStyle = 'rgba(255, 217, 120, 0.28)';
+    ctx.fillRect(-130, 58, 26, 4);
+    ctx.fillRect(104, 58, 26, 4);
+
+    // Lotus pedestal beneath the diya.
+    ctx.save();
+    ctx.translate(0, 78);
+    for (let i = 0; i < 12; i++) {
+        ctx.save();
+        ctx.rotate((Math.PI * 2 * i) / 12);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(18, -18, 6, -40);
+        ctx.quadraticCurveTo(-5, -18, 0, 0);
+        ctx.closePath();
+        ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 194, 101, 0.22)' : 'rgba(255, 161, 77, 0.16)';
+        ctx.fill();
+        ctx.restore();
+    }
+    ctx.restore();
+
+    ctx.restore();
+}
+
+function drawSacredRays(ctx, time) {
+    const cx = state.width / 2;
+    const cy = state.height * 0.62;
+    const rayCount = state.isMobile ? 10 : 16;
+    const length = Math.min(state.width, state.height) * (state.isMobile ? 0.34 : 0.42);
+
+    ctx.save();
+    ctx.translate(cx, cy - 8);
+    ctx.globalAlpha = 0.45;
+    for (let i = 0; i < rayCount; i++) {
+        const angle = (Math.PI * 2 * i) / rayCount + Math.sin(time * 0.0006 + i) * 0.05;
+        const rayGradient = ctx.createLinearGradient(0, 0, Math.cos(angle) * length, Math.sin(angle) * length);
+        rayGradient.addColorStop(0, 'rgba(255, 237, 189, 0.25)');
+        rayGradient.addColorStop(0.45, 'rgba(255, 173, 83, 0.08)');
+        rayGradient.addColorStop(1, 'rgba(255, 173, 83, 0)');
+        ctx.strokeStyle = rayGradient;
+        ctx.lineWidth = state.isMobile ? 1.2 : 1.8;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(angle) * length, Math.sin(angle) * length);
+        ctx.stroke();
+    }
+    ctx.restore();
+}
+
 function drawCentralFlame(ctx, time, glowScale, showFlame) {
     const cx = state.width / 2;
     const cy = state.height * 0.62;
@@ -482,7 +583,9 @@ function render(time) {
 
     drawBackground(state.ctx, time);
     drawTempleSilhouette(state.ctx);
+    drawSacredRays(state.ctx, time);
     drawMandalas(state.ctx, time);
+    drawSacredFrame(state.ctx, time);
 
     if (!state.started) {
         drawCentralFlame(state.ctx, time, 1, false);
